@@ -31,37 +31,32 @@ public class Main_agent extends Agent {
 
     protected void setup() {
         System.out.println("Hello! Main Agent " + getAID().getName() + " is ready.");
-        //System.out.println("Lanzando GUI...");
         GUI = new psi35_GUI();
         GUI.init(this, R, S, I, P);
         addBehaviour(new TickerBehaviour(this, 2000) {
-            protected void onTick() {
-                // Update the list of seller agents
+            protected void onTick() { //Añadimos behaviour para buscar a los jugadores en el DF
                 DFAgentDescription template = new DFAgentDescription();
                 ServiceDescription sd = new ServiceDescription();
                 sd.setType("Player");
                 template.addServices(sd);
                 try {
                     DFAgentDescription[] result = DFService.search(myAgent, template);
-                    AID[] sellerAgents = new AID[result.length];
+                    AID[] jugadores = new AID[result.length];
                     for (int i = 0; i < result.length; ++i) {
-                        sellerAgents[i] = result[i].getName();
+                        jugadores[i] = result[i].getName();
                         if (game == false) {
                             GUI.setTable(result[i].getName().getLocalName());
                             update_labels();
-
                         }
                     }
                 } catch (FIPAException fe) {
                     fe.printStackTrace();
                 }
-                // Perform the request
             }
         });
-
-        //addBehaviour(new main_loop());
     }
 
+    //Cogemos los parametros de la GUI y los guardamos en las variables correspondientes
     public void set_params(String R, String S, String I, String P) {
         if (game != false) {
             stop_game();
@@ -82,27 +77,28 @@ public class Main_agent extends Agent {
         GUI.jTextArea1.append("Generando matriz...\n");
         ArrayList matrix = new ArrayList();
         Random rand = new Random();
-        for (int i = 0; i < S; i++) {
+        for (int i = 0; i < S; i++) {//Generamos fila a fila la matriz
             ArrayList fila = new ArrayList();
-            for (int j = 0; j < S; j++) {
+            for (int j = 0; j < S; j++) {//Para cada fila generamos cada elemento de la matriz
                 ArrayList payoffs = new ArrayList();
-                for (int k = 0; k < 2; k++) {
-                    if (i == 0) {
-                        if (j == i) {
+                for (int k = 0; k < 2; k++) {//Cada elemento de la matriz es un array con dos valores
+                    if (i == 0) {//Si estamos en la primera fila, todos los elementos generados son unicos
+                        if (j == i) {//Si estamos en la diagonal, el array contiene los mismos valores
                             int value = rand.nextInt((9 - 0) + 1) + 0;
                             payoffs.add(value);
                             payoffs.add(value);
                             break;
-                        } else {
+                        } else {//Si no estamos en la diagonal, calculamos un array con valores diferentes
                             payoffs.add(rand.nextInt((9 - 0) + 1) + 0);
                         }
                     } else if (i >= j) {
-                        if (i == j) {
+                        if (i == j) {//Si estamos en la diagonal, el array contiene los mismos valores
                             int value = rand.nextInt((9 - 0) + 1) + 0;
                             payoffs.add(value);
                             payoffs.add(value);
                             break;
-                        } else if (i != 1 && (S - i != S - 1)) {
+                        } else if (i != 1 && (S - i != S - 1)) {//Si no estamos en la diagonal, estamos por debajo de ella,
+                            //y al ser simetrica es necesario copiar de las posiciones adecuadas los valores.
                             if (j == 0) {
                                 payoffs = (ArrayList) ((ArrayList) matrix.get(0)).get(i - j);
                             } else {
@@ -111,22 +107,20 @@ public class Main_agent extends Agent {
                         } else {
                             payoffs = (ArrayList) ((ArrayList) matrix.get(0)).get(i - j);
                         }
-                    } else {
+                    } else {//Al estar por encima de la diagonal hay que crear nuevos elementos y no copiarlos
                         payoffs.add(rand.nextInt((9 - 0) + 1) + 0);
 
                     }
                 }
-                ArrayList payoffs2 = new ArrayList();
+                ArrayList payoffs2 = new ArrayList();//Creamos un array para poder invertir los elementos de la matriz
                 payoffs2.add(payoffs.get(0));
                 payoffs2.add(payoffs.get(1));
-
                 Collections.swap(payoffs2, 0, 1);
                 fila.add(payoffs2);
             }
             matrix.add(fila);
         }
         GUI.jTextArea1.append("Matriz generada\n");
-        print_matrix(matrix);
         return matrix;
     }
 
@@ -137,8 +131,8 @@ public class Main_agent extends Agent {
         double cambios = 0;
         double matriz_cambiada;
         boolean exit = true;
-        do {
-            int fila = rand.nextInt(((S - 1) - 0) + 1) + 0;
+        do {//Mientras el porcentaje de cambio de la matriz no sea mayor al porcentaje P seguimos cambiando la matriz
+            int fila = rand.nextInt(((S - 1) - 0) + 1) + 0;//Seleccionamos una fila y columna aleatoria
             int columna = rand.nextInt(((S - 1) - 0) + 1) + 0;
             //System.out.println("Fila: " + fila + " Columna: " + columna);
             ArrayList swap = new ArrayList();
@@ -146,7 +140,7 @@ public class Main_agent extends Agent {
             swap.add(rand.nextInt((9 - 0) + 1) + 0);
             ((ArrayList) matrix.get(fila)).set(columna, swap);
             cambios++;
-            if (fila != columna) {
+            if (fila != columna) {//Si no estamos en la diagonal es necesario actualizar su simetrico
                 ArrayList swap2 = new ArrayList();
                 swap2.add(swap.get(0));
                 swap2.add(swap.get(1));
@@ -155,7 +149,7 @@ public class Main_agent extends Agent {
                 cambios++;
             }
 
-            matriz_cambiada = cambios / (S * S);
+            matriz_cambiada = cambios / (S * S);//Calculamos el nuevo porcentaje
             if ((matriz_cambiada * 100) >= p) {
                 exit = false;
             }
@@ -166,7 +160,7 @@ public class Main_agent extends Agent {
         print_matrix(matrix);
     }
 
-    public void update_labels() {
+    public void update_labels() {//Actualizamos las variables en la GUI
         int jugadores = GUI.getTable().size();
         GUI.players_label.setText(Integer.toString(jugadores));
         N = (jugadores * (jugadores - 1)) / 2;
@@ -184,17 +178,16 @@ public class Main_agent extends Agent {
         GUI.jTextArea3.append("\n");
     }
 
+    //Calculamos los enfrentamientos entre los jugadores y los añadimos a un array que iremos consultando
     public void calculate_games() {
         games.removeAll(games);
         for (int i = 0; i < GUI.getTable().size(); i++) {
             for (int j = 0; j < GUI.getTable().size(); j++) {
                 ArrayList game = new ArrayList();
                 if (i != j) {
-                    //game.add((String) ((Vector) GUI.getTable().get(i)).get(0));
-                    //game.add((String) ((Vector) GUI.getTable().get(j)).get(0));
                     game.add(i);
                     game.add(j);
-                    ArrayList swap = new ArrayList(game);
+                    ArrayList swap = new ArrayList(game);//Hacemos una copia y los permutamos, asi solo añadimos una vez los partidos
                     Collections.swap(swap, 0, 1);
                     if (games.contains(swap)) {
                         continue;
@@ -203,20 +196,19 @@ public class Main_agent extends Agent {
                 }
             }
         }
-        System.out.println(games);
     }
 
     public void start_game() {
-        if (GUI.getTable().size() != 0) {
-            if (game == true) {
+        if (GUI.getTable().size() != 0) {//Si hay jugadores comenzamos el juego
+            if (game == true) {//Si ya hay un juego en marcha lo paramos, y empezamos de nuevo
                 stop_game();
             }
             GUI.jTextArea1.append("Comienza el juego\n");
             matrix = generate_matrix(S);
             update_labels();
             GUI.reset_scoreboard();
-
             calculate_games();
+            
             game = true;
             stop = false;
             pause = false;
@@ -234,15 +226,17 @@ public class Main_agent extends Agent {
         stop = true;
         game = false;
         pause = false;
-        System.out.println("stop");
+        GUI.jTextArea1.append("Juego parado\n");
     }
 
     public void pause_game() {
         pause = true;
+        GUI.jTextArea1.append("Juego pausado\n");
     }
 
     public void resume_game() {
         pause = false;
+        GUI.jTextArea1.append("Juego resumido\n");
     }
 
     public class main_loop extends Behaviour {
@@ -260,11 +254,11 @@ public class Main_agent extends Agent {
         ACLMessage msg1 = receive();
 
         public void action() {
-            if (pause == false) {
-                int id0 = (int) ((ArrayList) games.get(0)).get(0);
-                int id1 = (int) ((ArrayList) games.get(0)).get(1);
+            if (pause == false) {//Si pausamos no hacemos nada
+                int id0 = (int) ((ArrayList) games.get(0)).get(0);//Obtenemos los ids de los jugadores de la lista de partidos
+                int id1 = (int) ((ArrayList) games.get(0)).get(1);//Como la lista de partidos ya esta ordenada, id0 siempre es el menor
                 switch (step) {
-                    case 0:
+                    case 0://Enviamos id y datos a los jugadores
                         for (int i = 0; i < GUI.getTable().size(); i++) {
                             System.out.println(((Vector) GUI.getTable().get(i)).get(0));
                             String agent = (String) ((Vector) GUI.getTable().get(i)).get(0);
@@ -274,7 +268,7 @@ public class Main_agent extends Agent {
                         }
                         step++;
                         break;
-                    case 1:
+                    case 1://Comienza el juego
                         rounds = 1;
                         payoff1 = 0;
                         payoff2 = 0;
@@ -289,8 +283,8 @@ public class Main_agent extends Agent {
                         }
                         step++;
                         break;
-                    case 2:
-                        if (j == 0) {
+                    case 2://Comienza la ronda
+                        if (j == 0) {//Mandamos mensajes a cada jugador una sola vez, pero tenemos que procesar las dos respuestas
                             GUI.actualround_label.setText(Integer.toString(rounds));
                             GUI.jTextArea1.append("Comienza la ronda: " + rounds + "\n");
                             for (int i = 0; i < 2; i++) {
@@ -304,10 +298,10 @@ public class Main_agent extends Agent {
                         }
                         msg1 = receive();
                         if (msg1 != null) {
-                            // Process the message
                             //System.out.println(msg1);
                             String msg = msg1.getContent();
-                            if (j == 1) {
+                            if (j == 1) {//Procesamos el primer mensaje que contiene la fila, ya que
+                                //primero le mandamos el mensaje al jugador con el id mas bajo
                                 j++;
                                 row = Integer.parseInt(msg.split("#")[1]);
 
@@ -321,13 +315,13 @@ public class Main_agent extends Agent {
                             block();
                         }
                         break;
-                    case 3://Results
-
+                    case 3://Enviamos resultados a los jugadores
                         for (int i = 0; i < 2; i++) {
                             int id = (int) ((ArrayList) games.get(0)).get(i);
+                            //Obtenemos las payoffs de esta ronda
                             int payoff1_now = (int) ((ArrayList) ((ArrayList) matrix.get(row)).get(col)).get(0);
                             int payoff2_now = (int) ((ArrayList) ((ArrayList) matrix.get(row)).get(col)).get(1);
-                            payoff1 = payoff1 + payoff1_now;
+                            payoff1 = payoff1 + payoff1_now;//Y se las sumamos a las totales del juego
                             payoff2 = payoff2 + payoff2_now;
                             String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
                             String message = "Results#" + row + "," + col + "#"
@@ -335,13 +329,13 @@ public class Main_agent extends Agent {
                             addBehaviour(new send_message(agent, message, INFORM));
                         }
                         print_matrix(matrix);
-                        GUI.jTextArea3.append((String) ((Vector) GUI.getTable().get(0)).get(0) + ": " + Integer.toString(payoff1) + "\n");
-                        GUI.jTextArea3.append((String) ((Vector) GUI.getTable().get(1)).get(0) + ": " + Integer.toString(payoff2) + "\n");
+                        GUI.jTextArea3.append((String) ((Vector) GUI.getTable().get(id0)).get(0) + ": " + Integer.toString(payoff1) + "\n");
+                        GUI.jTextArea3.append((String) ((Vector) GUI.getTable().get(id1)).get(0) + ": " + Integer.toString(payoff2) + "\n");
 
                         if (rounds < R) {
                             rounds++;
                             total_rounds++;
-                            if (total_rounds == I) {
+                            if (total_rounds == I) {//Si hemos llegado a I, procedemos a actualizar parte de la matriz
                                 step = 5;
                             } else {
                                 step = 2;
@@ -350,16 +344,15 @@ public class Main_agent extends Agent {
                             step++;
                         }
                         break;
-                    case 4:
+                    case 4://Avisamos a los jugadores de que el juego se termino
                         for (int i = 0; i < 2; i++) {
                             int id = (int) ((ArrayList) games.get(0)).get(i);
                             String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
                             String message = "EndGame";
                             addBehaviour(new send_message(agent, message, INFORM));
                         }
-                        //step++;
 
-                        if (payoff1 < payoff2) {
+                        if (payoff1 < payoff2) {//Actualizamos el resultado de la tabla con el ganador
                             GUI.jTextArea1.append("Juego ganado por: " + id1 + " " + ((Vector) GUI.getTable().get(id1)).get(0) + "\n");
                             GUI.addResult(id1, 2);
                             GUI.addResult(id0, 3);
@@ -374,13 +367,13 @@ public class Main_agent extends Agent {
                             games_played++;
                             games.remove(0);
 
-                        } else {
+                        } else {//Si terminamos todos los juegos salimos de la partida
                             stop = true;
                             game = false;
                             pause = false;
                         }
                         break;
-                    case 5:
+                    case 5://Actualizamos matriz y avisamos a los jugadores
                         update_matrix(P);
                         total_rounds = 0;
                         for (int i = 0; i < 2; i++) {

@@ -20,7 +20,7 @@ import jade.lang.acl.ACLMessage;
 import static jade.lang.acl.ACLMessage.INFORM;
 import java.util.Random;
 
-public class Dummy_agent extends Agent {
+public class psi35_Fixed extends Agent {
 
     boolean game = false;
 
@@ -32,13 +32,12 @@ public class Dummy_agent extends Agent {
     int id = 0;
 
     protected void setup() {
-        // Printout a welcome message
         System.out.println("Hello! Dummy_agent " + getAID().getName() + " is ready.");
-        DFAgentDescription dfd = new DFAgentDescription();
+        DFAgentDescription dfd = new DFAgentDescription();//Registramos al agente en el DF
         dfd.setName(getAID());
         ServiceDescription sd = new ServiceDescription();
         sd.setType("Player");
-        sd.setName("JADE-book-trading");
+        sd.setName(getAID().getName());
         dfd.addServices(sd);
         try {
             DFService.register(this, dfd);
@@ -46,11 +45,11 @@ public class Dummy_agent extends Agent {
             fe.printStackTrace();
         }
 
-        addBehaviour(new MyOneShotBehaviour2());
+        addBehaviour(new main_loop());
 
     }
 
-    public class MyOneShotBehaviour2 extends Behaviour {
+    public class main_loop extends Behaviour {
 
         int step = 0;
         int rounds = 1;
@@ -59,7 +58,6 @@ public class Dummy_agent extends Agent {
         public void action() {
             ACLMessage msg1 = receive();
             if (msg1 != null) {
-                // Process the message
                 //System.out.println(msg1);
                 String[] message = msg1.getContent().split("#");
                 if (message[0].equals("Id")) {
@@ -94,7 +92,7 @@ public class Dummy_agent extends Agent {
                     break;
                 case 2:
                     Random rand = new Random();
-                    int pos = rand.nextInt(((S - 1) - 0) + 1) + 0;
+                    int pos = S-1;
 
                     if (msg1 != null) {
                         ACLMessage reply = msg1.createReply();
@@ -140,6 +138,6 @@ public class Dummy_agent extends Agent {
             fe.printStackTrace();
         }
         // Printout a dismissal message
-        System.out.println("Seller-agent " + getAID().getName() + " terminating.");
+        System.out.println("Player " + getAID().getName() + " terminating.");
     }
 }
