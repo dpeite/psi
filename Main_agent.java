@@ -261,6 +261,8 @@ public class Main_agent extends Agent {
 
         public void action() {
             if (pause == false) {
+                int id0 = (int) ((ArrayList) games.get(0)).get(0);
+                int id1 = (int) ((ArrayList) games.get(0)).get(1);
                 switch (step) {
                     case 0:
                         for (int i = 0; i < GUI.getTable().size(); i++) {
@@ -269,7 +271,6 @@ public class Main_agent extends Agent {
                             String message = "Id#" + i + "#" + GUI.getTable().size() + ","
                                     + S + "," + R + "," + I + "," + P;
                             addBehaviour(new send_message(agent, message, INFORM));
-                            //send_message(agent, message, INFORM);
                         }
                         step++;
                         break;
@@ -280,14 +281,11 @@ public class Main_agent extends Agent {
                         GUI.actualgame_label.setText(Integer.toString(games_played));
                         GUI.jTextArea1.append("Comienza el juego: " + games_played + "\n");
                         for (int i = 0; i < 2; i++) {
-                            int id0 = (int) ((ArrayList) games.get(0)).get(0);
-                            int id1 = (int) ((ArrayList) games.get(0)).get(1);
                             int id = (int) ((ArrayList) games.get(0)).get(i);
 
                             String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
                             String message = "NewGame#" + id0 + "," + id1;
                             addBehaviour(new send_message(agent, message, INFORM));
-                            //send_message(agent, message, INFORM);
                         }
                         step++;
                         break;
@@ -296,15 +294,10 @@ public class Main_agent extends Agent {
                             GUI.actualround_label.setText(Integer.toString(rounds));
                             GUI.jTextArea1.append("Comienza la ronda: " + rounds + "\n");
                             for (int i = 0; i < 2; i++) {
-
-                                int id0 = (int) ((ArrayList) games.get(0)).get(0);
-                                int id1 = (int) ((ArrayList) games.get(0)).get(1);
                                 int id = (int) ((ArrayList) games.get(0)).get(i);
-
                                 String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
                                 String message = "Position";
                                 addBehaviour(new send_message(agent, message, REQUEST));
-                                //send_message(agent, message, INFORM);
                             }
                             j++;
 
@@ -331,8 +324,6 @@ public class Main_agent extends Agent {
                     case 3://Results
 
                         for (int i = 0; i < 2; i++) {
-                            int id0 = (int) ((ArrayList) games.get(0)).get(0);
-                            int id1 = (int) ((ArrayList) games.get(0)).get(1);
                             int id = (int) ((ArrayList) games.get(0)).get(i);
                             int payoff1_now = (int) ((ArrayList) ((ArrayList) matrix.get(row)).get(col)).get(0);
                             int payoff2_now = (int) ((ArrayList) ((ArrayList) matrix.get(row)).get(col)).get(1);
@@ -342,7 +333,6 @@ public class Main_agent extends Agent {
                             String message = "Results#" + row + "," + col + "#"
                                     + payoff1_now + "," + payoff2_now;
                             addBehaviour(new send_message(agent, message, INFORM));
-                            //send_message(agent, message, INFORM);
                         }
                         print_matrix(matrix);
                         GUI.jTextArea3.append((String) ((Vector) GUI.getTable().get(0)).get(0) + ": " + Integer.toString(payoff1) + "\n");
@@ -362,18 +352,12 @@ public class Main_agent extends Agent {
                         break;
                     case 4:
                         for (int i = 0; i < 2; i++) {
-                            int id0 = (int) ((ArrayList) games.get(0)).get(0);
-                            int id1 = (int) ((ArrayList) games.get(0)).get(1);
                             int id = (int) ((ArrayList) games.get(0)).get(i);
-
                             String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
                             String message = "EndGame";
                             addBehaviour(new send_message(agent, message, INFORM));
-                            //send_message(agent, message, INFORM);
                         }
                         //step++;
-                        int id0 = (int) ((ArrayList) games.get(0)).get(0);
-                        int id1 = (int) ((ArrayList) games.get(0)).get(1);
 
                         if (payoff1 < payoff2) {
                             GUI.jTextArea1.append("Juego ganado por: " + id1 + " " + ((Vector) GUI.getTable().get(id1)).get(0) + "\n");
@@ -400,11 +384,7 @@ public class Main_agent extends Agent {
                         update_matrix(P);
                         total_rounds = 0;
                         for (int i = 0; i < 2; i++) {
-
-                            id0 = (int) ((ArrayList) games.get(0)).get(0);
-                            id1 = (int) ((ArrayList) games.get(0)).get(1);
                             int id = (int) ((ArrayList) games.get(0)).get(i);
-
                             String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
                             String message = "Changed#" + P;
                             addBehaviour(new send_message(agent, message, INFORM));
@@ -435,7 +415,6 @@ public class Main_agent extends Agent {
 
         public void action() {
             // perform operation X
-            //System.out.println("mandamos mensaje222");
             ACLMessage msg = new ACLMessage(performative);
             msg.addReceiver(new AID(agent, AID.ISLOCALNAME));
             msg.setPerformative(performative);
