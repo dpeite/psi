@@ -1,6 +1,7 @@
 
 import java.util.Vector;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.DefaultCaret;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -293,9 +294,13 @@ public class psi35_GUI extends javax.swing.JFrame {
                 .addContainerGap(64, Short.MAX_VALUE))
         );
 
+        jScrollPane2.setAutoscrolls(true);
+
         jTextArea1.setEditable(false);
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
+        DefaultCaret caret = (DefaultCaret)jTextArea1.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
         jScrollPane2.setViewportView(jTextArea1);
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
@@ -467,14 +472,15 @@ public class psi35_GUI extends javax.swing.JFrame {
     private void stop_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stop_buttonActionPerformed
         // TODO add your handling code here:
         System.out.println("Boton stop");
-        main_agent.stop_game();
+        main_agent.pause_game();
     }//GEN-LAST:event_stop_buttonActionPerformed
 
     private void continue_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_continue_buttonActionPerformed
         // TODO add your handling code here:
         System.out.println("Boton continuar");
         //jTextArea1.append("Huehue");
-        main_agent.update_matrix(70);
+        main_agent.resume_game();
+        
     }//GEN-LAST:event_continue_buttonActionPerformed
 
     private void about_menuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_about_menuActionPerformed

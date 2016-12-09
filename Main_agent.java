@@ -46,10 +46,10 @@ public class Main_agent extends Agent {
                     AID[] sellerAgents = new AID[result.length];
                     for (int i = 0; i < result.length; ++i) {
                         sellerAgents[i] = result[i].getName();
-                        //System.out.println("-------------------------");
-                        //System.out.println(result[i].getName());
                         if (game == false) {
                             GUI.setTable(result[i].getName().getLocalName());
+                            update_labels();
+
                         }
                     }
                 } catch (FIPAException fe) {
@@ -63,18 +63,18 @@ public class Main_agent extends Agent {
     }
 
     public void set_params(String R, String S, String I, String P) {
-        if (game == false) {
-            try {
-                this.R = Integer.parseInt(R);
-                this.S = Integer.parseInt(S);
-                this.I = Integer.parseInt(I);
-                this.P = Integer.parseInt(P);
-                GUI.jTextArea1.append("Parametros guardados\n");
-            } catch (Exception exc) {
-                GUI.jTextArea1.append("Algun valor no es un caracter valido\n");
-            }
-        } else {
-            GUI.jTextArea1.append("Falta por implementar que reinicie cuando cambies algun valor creo\n");
+        if (game != false) {
+            stop_game();
+        }
+        try {
+            this.R = Integer.parseInt(R);
+            this.S = Integer.parseInt(S);
+            this.I = Integer.parseInt(I);
+            this.P = Integer.parseInt(P);
+            update_labels();
+            GUI.jTextArea1.append("Parametros guardados\n");
+        } catch (Exception exc) {
+            GUI.jTextArea1.append("Algun valor no es un caracter valido\n");
         }
     }
 
@@ -166,7 +166,18 @@ public class Main_agent extends Agent {
         print_matrix(matrix);
     }
 
+    public void update_labels() {
+        int jugadores = GUI.getTable().size();
+        GUI.players_label.setText(Integer.toString(jugadores));
+        N = (jugadores * (jugadores - 1)) / 2;
+        GUI.totalgames_label.setText(Integer.toString(N));
+        GUI.totalrounds_label.setText(Integer.toString(R));
+        GUI.actualgame_label.setText("1");
+        GUI.actualround_label.setText("1");
+    }
+
     public void print_matrix(ArrayList matrix) {
+        GUI.jTextArea3.setText("");
         for (int i = 0; i < matrix.size(); i++) {
             GUI.jTextArea3.append(matrix.get(i).toString() + "\n");
         }
@@ -197,20 +208,18 @@ public class Main_agent extends Agent {
 
     public void start_game() {
         if (GUI.getTable().size() != 0) {
+            if (game == true) {
+                stop_game();
+            }
             GUI.jTextArea1.append("Comienza el juego\n");
             matrix = generate_matrix(S);
-            int jugadores = GUI.getTable().size();
-            GUI.players_label.setText(Integer.toString(jugadores));
-            N = (jugadores * (jugadores - 1)) / 2;
-            GUI.totalgames_label.setText(Integer.toString(N));
-            GUI.totalrounds_label.setText(Integer.toString(R));
-            GUI.actualgame_label.setText("1");
-            GUI.actualround_label.setText("1");
+            update_labels();
             GUI.reset_scoreboard();
 
             calculate_games();
             game = true;
             stop = false;
+            pause = false;
             addBehaviour(new main_loop());
         } else {
             GUI.jTextArea1.append("El juego no ha empezado, no hay jugadores disponibles\n");
@@ -218,12 +227,22 @@ public class Main_agent extends Agent {
 
     }
 
-    static boolean stop = false;
+    boolean stop = false;
+    boolean pause = false;
 
     public void stop_game() {
         stop = true;
         game = false;
+        pause = false;
         System.out.println("stop");
+    }
+
+    public void pause_game() {
+        pause = true;
+    }
+
+    public void resume_game() {
+        pause = false;
     }
 
     public class main_loop extends Behaviour {
@@ -241,154 +260,159 @@ public class Main_agent extends Agent {
         ACLMessage msg1 = receive();
 
         public void action() {
-            switch (step) {
-                case 0:
-                    for (int i = 0; i < GUI.getTable().size(); i++) {
-                        System.out.println(((Vector) GUI.getTable().get(i)).get(0));
-                        String agent = (String) ((Vector) GUI.getTable().get(i)).get(0);
-                        String message = "Id#" + i + "#" + GUI.getTable().size() + ","
-                                + S + "," + R + "," + I + "," + P;
-                        addBehaviour(new send_message(agent, message, INFORM));
-                        //send_message(agent, message, INFORM);
-                    }
-                    step++;
-                    break;
-                case 1:
-                    rounds = 1;
-                    payoff1 = 0;
-                    payoff2 = 0;
-                    GUI.actualgame_label.setText(Integer.toString(games_played));
-                    GUI.jTextArea1.append("Comienza el juego: " + games_played + "\n");
-                    for (int i = 0; i < 2; i++) {
-                        int id0 = (int) ((ArrayList) games.get(0)).get(0);
-                        int id1 = (int) ((ArrayList) games.get(0)).get(1);
-                        int id = (int) ((ArrayList) games.get(0)).get(i);
-
-                        String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
-                        String message = "NewGame#" + id0 + "," + id1;
-                        addBehaviour(new send_message(agent, message, INFORM));
-                        //send_message(agent, message, INFORM);
-                    }
-                    step++;
-                    break;
-                case 2:
-                    if (j == 0) {
-                        GUI.actualround_label.setText(Integer.toString(rounds));
-                        GUI.jTextArea1.append("Comienza la ronda: " + rounds + "\n");
+            if (pause == false) {
+                switch (step) {
+                    case 0:
+                        for (int i = 0; i < GUI.getTable().size(); i++) {
+                            System.out.println(((Vector) GUI.getTable().get(i)).get(0));
+                            String agent = (String) ((Vector) GUI.getTable().get(i)).get(0);
+                            String message = "Id#" + i + "#" + GUI.getTable().size() + ","
+                                    + S + "," + R + "," + I + "," + P;
+                            addBehaviour(new send_message(agent, message, INFORM));
+                            //send_message(agent, message, INFORM);
+                        }
+                        step++;
+                        break;
+                    case 1:
+                        rounds = 1;
+                        payoff1 = 0;
+                        payoff2 = 0;
+                        GUI.actualgame_label.setText(Integer.toString(games_played));
+                        GUI.jTextArea1.append("Comienza el juego: " + games_played + "\n");
                         for (int i = 0; i < 2; i++) {
-
                             int id0 = (int) ((ArrayList) games.get(0)).get(0);
                             int id1 = (int) ((ArrayList) games.get(0)).get(1);
                             int id = (int) ((ArrayList) games.get(0)).get(i);
 
                             String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
-                            String message = "Position";
-                            addBehaviour(new send_message(agent, message, REQUEST));
+                            String message = "NewGame#" + id0 + "," + id1;
+                            addBehaviour(new send_message(agent, message, INFORM));
                             //send_message(agent, message, INFORM);
                         }
-                        j++;
+                        step++;
+                        break;
+                    case 2:
+                        if (j == 0) {
+                            GUI.actualround_label.setText(Integer.toString(rounds));
+                            GUI.jTextArea1.append("Comienza la ronda: " + rounds + "\n");
+                            for (int i = 0; i < 2; i++) {
 
-                    }
-                    msg1 = receive();
-                    if (msg1 != null) {
-                        // Process the message
-                        //System.out.println(msg1);
-                        String msg = msg1.getContent();
-                        if (j == 1) {
+                                int id0 = (int) ((ArrayList) games.get(0)).get(0);
+                                int id1 = (int) ((ArrayList) games.get(0)).get(1);
+                                int id = (int) ((ArrayList) games.get(0)).get(i);
+
+                                String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
+                                String message = "Position";
+                                addBehaviour(new send_message(agent, message, REQUEST));
+                                //send_message(agent, message, INFORM);
+                            }
                             j++;
-                            row = Integer.parseInt(msg.split("#")[1]);
 
+                        }
+                        msg1 = receive();
+                        if (msg1 != null) {
+                            // Process the message
+                            //System.out.println(msg1);
+                            String msg = msg1.getContent();
+                            if (j == 1) {
+                                j++;
+                                row = Integer.parseInt(msg.split("#")[1]);
+
+                            } else {
+                                col = Integer.parseInt(msg.split("#")[1]);
+
+                                j = 0;
+                                step++;
+                            }
                         } else {
-                            col = Integer.parseInt(msg.split("#")[1]);
+                            block();
+                        }
+                        break;
+                    case 3://Results
 
-                            j = 0;
+                        for (int i = 0; i < 2; i++) {
+                            int id0 = (int) ((ArrayList) games.get(0)).get(0);
+                            int id1 = (int) ((ArrayList) games.get(0)).get(1);
+                            int id = (int) ((ArrayList) games.get(0)).get(i);
+                            int payoff1_now = (int) ((ArrayList) ((ArrayList) matrix.get(row)).get(col)).get(0);
+                            int payoff2_now = (int) ((ArrayList) ((ArrayList) matrix.get(row)).get(col)).get(1);
+                            payoff1 = payoff1 + payoff1_now;
+                            payoff2 = payoff2 + payoff2_now;
+                            String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
+                            String message = "Results#" + row + "," + col + "#"
+                                    + payoff1_now + "," + payoff2_now;
+                            addBehaviour(new send_message(agent, message, INFORM));
+                            //send_message(agent, message, INFORM);
+                        }
+                        print_matrix(matrix);
+                        GUI.jTextArea3.append((String) ((Vector) GUI.getTable().get(0)).get(0) + ": " + Integer.toString(payoff1) + "\n");
+                        GUI.jTextArea3.append((String) ((Vector) GUI.getTable().get(1)).get(0) + ": " + Integer.toString(payoff2) + "\n");
+
+                        if (rounds < R) {
+                            rounds++;
+                            total_rounds++;
+                            if (total_rounds == I) {
+                                step = 5;
+                            } else {
+                                step = 2;
+                            }
+                        } else {
                             step++;
                         }
-                    } else {
-                        block();
-                    }
-                    break;
-                case 3://Results
+                        break;
+                    case 4:
+                        for (int i = 0; i < 2; i++) {
+                            int id0 = (int) ((ArrayList) games.get(0)).get(0);
+                            int id1 = (int) ((ArrayList) games.get(0)).get(1);
+                            int id = (int) ((ArrayList) games.get(0)).get(i);
 
-                    for (int i = 0; i < 2; i++) {
-                        int id0 = (int) ((ArrayList) games.get(0)).get(0);
-                        int id1 = (int) ((ArrayList) games.get(0)).get(1);
-                        int id = (int) ((ArrayList) games.get(0)).get(i);
-                        int payoff1_now = (int) ((ArrayList) ((ArrayList) matrix.get(row)).get(col)).get(0);
-                        int payoff2_now = (int) ((ArrayList) ((ArrayList) matrix.get(row)).get(col)).get(1);
-                        payoff1 = payoff1 + payoff1_now;
-                        payoff2 = payoff2 + payoff2_now;
-                        String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
-                        String message = "Results#" + row + "," + col + "#"
-                                + payoff1_now + "," + payoff2_now;
-                        addBehaviour(new send_message(agent, message, INFORM));
-                        //send_message(agent, message, INFORM);
-                    }
-                    if (rounds < R) {
-                        rounds++;
-                        total_rounds++;
-                        if (total_rounds == I) {
-                            step = 5;
-                        } else {
-                            step = 2;
+                            String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
+                            String message = "EndGame";
+                            addBehaviour(new send_message(agent, message, INFORM));
+                            //send_message(agent, message, INFORM);
                         }
-                    } else {
-                        step++;
-                    }
-                    break;
-                case 4:
-                    for (int i = 0; i < 2; i++) {
+                        //step++;
                         int id0 = (int) ((ArrayList) games.get(0)).get(0);
                         int id1 = (int) ((ArrayList) games.get(0)).get(1);
-                        int id = (int) ((ArrayList) games.get(0)).get(i);
 
-                        String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
-                        String message = "EndGame";
-                        addBehaviour(new send_message(agent, message, INFORM));
-                        //send_message(agent, message, INFORM);
-                    }
-                    //step++;
-                    int id0 = (int) ((ArrayList) games.get(0)).get(0);
-                    int id1 = (int) ((ArrayList) games.get(0)).get(1);
-                    System.out.println(payoff1);
-                    System.out.println(payoff2);
+                        if (payoff1 < payoff2) {
+                            GUI.jTextArea1.append("Juego ganado por: " + id1 + " " + ((Vector) GUI.getTable().get(id1)).get(0) + "\n");
+                            GUI.addResult(id1, 2);
+                            GUI.addResult(id0, 3);
+                        } else if (payoff1 > payoff2) {
+                            GUI.jTextArea1.append("Juego ganado por: " + id0 + " " + ((Vector) GUI.getTable().get(id0)).get(0) + "\n");
+                            GUI.addResult(id1, 3);
+                            GUI.addResult(id0, 2);
+                        }
 
-                    if (payoff1 < payoff2) {
-                        GUI.jTextArea1.append("Juego ganado por: " + id1 + "\n");
-                        GUI.addResult(id1, 2);
-                        GUI.addResult(id0, 3);
-                    } else if (payoff1 > payoff2) {
-                        GUI.jTextArea1.append("Juego ganado por: " + id0 + "\n");
-                        GUI.addResult(id1, 3);
-                        GUI.addResult(id0, 2);
-                    }
+                        if (games_played < N) {
+                            step = 1;
+                            games_played++;
+                            games.remove(0);
 
-                    if (games_played < N) {
-                        step = 1;
-                        games_played++;
-                        games.remove(0);
+                        } else {
+                            stop = true;
+                            game = false;
+                            pause = false;
+                        }
+                        break;
+                    case 5:
+                        update_matrix(P);
+                        total_rounds = 0;
+                        for (int i = 0; i < 2; i++) {
 
-                    } else {
-                        stop = true;
-                        game = false;
-                    }
-                    break;
-                case 5:
-                    update_matrix(P);
-                    total_rounds = 0;
-                    for (int i = 0; i < 2; i++) {
+                            id0 = (int) ((ArrayList) games.get(0)).get(0);
+                            id1 = (int) ((ArrayList) games.get(0)).get(1);
+                            int id = (int) ((ArrayList) games.get(0)).get(i);
 
-                        id0 = (int) ((ArrayList) games.get(0)).get(0);
-                        id1 = (int) ((ArrayList) games.get(0)).get(1);
-                        int id = (int) ((ArrayList) games.get(0)).get(i);
+                            String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
+                            String message = "Changed#" + P;
+                            addBehaviour(new send_message(agent, message, INFORM));
+                        }
+                        step = 2;
+                        break;
 
-                        String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
-                        String message = "Changed#"+P;
-                        addBehaviour(new send_message(agent, message, INFORM));
-                    }
-                    step = 2;
-                    break;
-                    
+                }
             }
         }
 

@@ -132,38 +132,6 @@ public class Dummy_agent extends Agent {
         }
     }
 
-    /*public void send_message(String agent, String message, int performative) {
-        // perform operation X
-        System.out.println("mandamos respuesta");
-        ACLMessage msg = new ACLMessage(performative);
-        msg.addReceiver(new AID(agent, AID.ISLOCALNAME));
-        msg.setPerformative(performative);
-        msg.setContent(message);
-        send(msg);
-    }*/
-
- /*public class send_message extends OneShotBehaviour {
-
-        String agent = null;
-        String message = null;
-        int performative = 0;
-
-        private send_message(String agent, String message, int performative) {
-            this.agent = agent;
-            this.message = message;
-            this.performative = performative;
-        }
-
-        public void action() {
-            // perform operation X
-            System.out.println("mandamos mensaje");
-            ACLMessage msg = new ACLMessage(performative);
-            msg.addReceiver(new AID(agent, AID.ISLOCALNAME));
-            msg.setPerformative(performative);
-            msg.setContent(message);
-            send(msg);
-        }
-    }*/
     protected void takeDown() {
         // Deregister from the yellow pages
         try {
