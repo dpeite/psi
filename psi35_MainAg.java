@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.Vector;
 
-public class Main_agent extends Agent {
+public class psi35_MainAg extends Agent {
 
     boolean game = false;
     psi35_GUI GUI;
@@ -260,7 +260,6 @@ public class Main_agent extends Agent {
                 switch (step) {
                     case 0://Enviamos id y datos a los jugadores
                         for (int i = 0; i < GUI.getTable().size(); i++) {
-                            System.out.println(((Vector) GUI.getTable().get(i)).get(0));
                             String agent = (String) ((Vector) GUI.getTable().get(i)).get(0);
                             String message = "Id#" + i + "#" + GUI.getTable().size() + ","
                                     + S + "," + R + "," + I + "," + P;

@@ -438,49 +438,27 @@ public class psi35_GUI extends javax.swing.JFrame {
 
     private void save_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_save_buttonActionPerformed
         // TODO add your handling code here:
-        System.out.println("Boton guardar");
         String R = rounds_set.getText();
         String S = size_set.getText();
         String I = iterations_set.getText();
         String P = percentage_set.getText();
 
-        /*if (R.equals("")) {
-            R = "0";
-            rounds_set.setText("0");
-        }
-        if (S.equals("")) {
-            S = "0";
-            size_set.setText("0");
-        }
-        if (I.equals("")) {
-            I = "0";
-            iterations_set.setText("0");
-        }
-        if (P.equals("")) {
-            P = "0";
-            percentage_set.setText("0");
-        }*/
         main_agent.set_params(R, S, I, P);
     }//GEN-LAST:event_save_buttonActionPerformed
 
     private void new_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_new_buttonActionPerformed
         // TODO add your handling code here:
-        System.out.println("Boton nuevo");
         main_agent.start_game();
     }//GEN-LAST:event_new_buttonActionPerformed
 
     private void stop_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stop_buttonActionPerformed
         // TODO add your handling code here:
-        System.out.println("Boton stop");
         main_agent.pause_game();
     }//GEN-LAST:event_stop_buttonActionPerformed
 
     private void continue_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_continue_buttonActionPerformed
         // TODO add your handling code here:
-        System.out.println("Boton continuar");
-        //jTextArea1.append("Huehue");
         main_agent.resume_game();
-        
     }//GEN-LAST:event_continue_buttonActionPerformed
 
     private void about_menuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_about_menuActionPerformed
@@ -490,65 +468,32 @@ public class psi35_GUI extends javax.swing.JFrame {
 
     private void new_menuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_new_menuActionPerformed
         // TODO add your handling code here:
-        System.out.println("Menu nuevo");
+        main_agent.start_game();
     }//GEN-LAST:event_new_menuActionPerformed
 
     private void stop_menuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stop_menuActionPerformed
         // TODO add your handling code here:
-        System.out.println("Menu stop");
+        main_agent.pause_game();
     }//GEN-LAST:event_stop_menuActionPerformed
 
     private void continue_menuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_continue_menuActionPerformed
         // TODO add your handling code here:
-        System.out.println("Menu continuar");
+        main_agent.resume_game();
     }//GEN-LAST:event_continue_menuActionPerformed
 
     private void reset_menuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reset_menuActionPerformed
         // TODO add your handling code here:
-        System.out.println("Menu reset");
+        System.out.println("Not implemented yet");
     }//GEN-LAST:event_reset_menuActionPerformed
 
     private void verbose_menuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verbose_menuActionPerformed
         // TODO add your handling code here:
-        System.out.println("Menu verbose");
+        System.out.println("Not implemented yet");
     }//GEN-LAST:event_verbose_menuActionPerformed
 
-//    /**
-//     * @param args the command line arguments
-//     */
-//    public static void main(String args[]) {
-//        /* Set the Nimbus look and feel */
-//        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-//        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-//         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-//         */
-//        try {
-//            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-//                if ("Nimbus".equals(info.getName())) {
-//                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-//                    break;
-//                }
-//            }
-//        } catch (ClassNotFoundException ex) {
-//            java.util.logging.Logger.getLogger(psi35_GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-//        } catch (InstantiationException ex) {
-//            java.util.logging.Logger.getLogger(psi35_GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-//        } catch (IllegalAccessException ex) {
-//            java.util.logging.Logger.getLogger(psi35_GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-//        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-//            java.util.logging.Logger.getLogger(psi35_GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-//        }
-//        //</editor-fold>
-//        /* Create and display the form */
-//        java.awt.EventQueue.invokeLater(new Runnable() {
-//            public void run() {
-//                new psi35_GUI().setVisible(true);
-//            }
-//        });
-//    }
-    static Main_agent main_agent;
+    static psi35_MainAg main_agent;
 
-    public void init(Main_agent a, int R, int S, int I, int P) {
+    public void init(psi35_MainAg a, int R, int S, int I, int P) {
         this.main_agent = a;
 
         java.awt.EventQueue.invokeLater(new Runnable() {
