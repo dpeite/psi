@@ -1,12 +1,12 @@
 
-import java.time.Clock;
+import java.util.Vector;
+import javax.swing.table.DefaultTableModel;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 /**
  *
  * @author peite
@@ -434,21 +434,47 @@ public class psi35_GUI extends javax.swing.JFrame {
     private void save_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_save_buttonActionPerformed
         // TODO add your handling code here:
         System.out.println("Boton guardar");
+        String R = rounds_set.getText();
+        String S = size_set.getText();
+        String I = iterations_set.getText();
+        String P = percentage_set.getText();
+
+        /*if (R.equals("")) {
+            R = "0";
+            rounds_set.setText("0");
+        }
+        if (S.equals("")) {
+            S = "0";
+            size_set.setText("0");
+        }
+        if (I.equals("")) {
+            I = "0";
+            iterations_set.setText("0");
+        }
+        if (P.equals("")) {
+            P = "0";
+            percentage_set.setText("0");
+        }*/
+        main_agent.set_params(R, S, I, P);
     }//GEN-LAST:event_save_buttonActionPerformed
 
     private void new_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_new_buttonActionPerformed
         // TODO add your handling code here:
         System.out.println("Boton nuevo");
+        main_agent.start_game();
     }//GEN-LAST:event_new_buttonActionPerformed
 
     private void stop_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stop_buttonActionPerformed
         // TODO add your handling code here:
         System.out.println("Boton stop");
+        main_agent.stop_game();
     }//GEN-LAST:event_stop_buttonActionPerformed
 
     private void continue_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_continue_buttonActionPerformed
         // TODO add your handling code here:
         System.out.println("Boton continuar");
+        //jTextArea1.append("Huehue");
+        main_agent.update_matrix(70);
     }//GEN-LAST:event_continue_buttonActionPerformed
 
     private void about_menuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_about_menuActionPerformed
@@ -514,22 +540,80 @@ public class psi35_GUI extends javax.swing.JFrame {
 //            }
 //        });
 //    }
-    
-    public void init(){
+    static Main_agent main_agent;
+
+    public void init(Main_agent a, int R, int S, int I, int P) {
+        this.main_agent = a;
+
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new psi35_GUI().setVisible(true);
+                rounds_set.setText(Integer.toString(R));
+                size_set.setText(Integer.toString(S));
+                iterations_set.setText(Integer.toString(I));
+                percentage_set.setText(Integer.toString(P));
             }
         });
     }
 
+    public void setTable(String name) {
+        //System.out.println("dentro set table");
+        Object[] row = {name, "", 0, 0, 0};
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        Vector tabla = model.getDataVector();
+        //System.out.println(model.getRowCount());
+        boolean add = true;
+        if (model.getRowCount() != 0) {
+            for (int i = 0; i < model.getRowCount(); i++) {
+                //System.out.println(((Vector) tabla.elementAt(i)).elementAt(0));
+                if (((Vector) tabla.elementAt(i)).elementAt(0).equals(name)) {
+                    add = false;
+                }
+            }
+        } else {
+            add = true;
+        }
+        if (add == true) {
+            model.addRow(row);
+            jTextArea1.append("Añadido un nuevo jugador: " + row[0] + "\n");
+
+        }
+        //System.out.println(model.getDataVector());
+    }
+
+    public void addResult(int id, int result) {
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        Vector tabla = model.getDataVector();
+        int value = (int) ((Vector) tabla.elementAt(id)).get(result);
+        ((Vector) tabla.elementAt(id)).set(result, value + 1);
+        jTable1.updateUI();
+
+    }
+
+    public void reset_scoreboard() {
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        Vector tabla = model.getDataVector();
+        for (int i = 0; i < getTable().size(); i++) {
+            for (int j = 2; j < 5; j++) {
+                ((Vector) tabla.elementAt(i)).set(j, 0);
+
+            }
+            jTable1.updateUI();
+        }
+    }
+
+    public Vector getTable() {
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        return model.getDataVector();
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem about_menu;
-    private javax.swing.JLabel actualgame_label;
-    private javax.swing.JLabel actualround_label;
+    public static javax.swing.JLabel actualgame_label;
+    public static javax.swing.JLabel actualround_label;
     private javax.swing.JButton continue_button;
     private javax.swing.JMenuItem continue_menu;
-    private javax.swing.JTextField iterations_set;
+    public static javax.swing.JTextField iterations_set;
     private javax.swing.JDialog jDialog1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
@@ -557,21 +641,21 @@ public class psi35_GUI extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextArea jTextArea3;
+    public static javax.swing.JTable jTable1;
+    public static javax.swing.JTextArea jTextArea1;
+    public static javax.swing.JTextArea jTextArea3;
     private javax.swing.JButton new_button;
     private javax.swing.JMenuItem new_menu;
-    private javax.swing.JTextField percentage_set;
-    private javax.swing.JLabel players_label;
+    public static javax.swing.JTextField percentage_set;
+    public static javax.swing.JLabel players_label;
     private javax.swing.JMenuItem reset_menu;
-    private javax.swing.JTextField rounds_set;
+    public static javax.swing.JTextField rounds_set;
     private javax.swing.JButton save_button;
-    private javax.swing.JTextField size_set;
+    public static javax.swing.JTextField size_set;
     private javax.swing.JButton stop_button;
     private javax.swing.JMenuItem stop_menu;
-    private javax.swing.JLabel totalgames_label;
-    private javax.swing.JLabel totalrounds_label;
+    public static javax.swing.JLabel totalgames_label;
+    public static javax.swing.JLabel totalrounds_label;
     private javax.swing.JCheckBoxMenuItem verbose_menu;
     // End of variables declaration//GEN-END:variables
 }
