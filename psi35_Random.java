@@ -32,7 +32,7 @@ public class psi35_Random extends Agent {
     int id = 0;
 
     protected void setup() {
-        System.out.println("Hello! Dummy_agent " + getAID().getName() + " is ready.");
+        System.out.println("Hello! Random_agent " + getAID().getName() + " is ready.");
         DFAgentDescription dfd = new DFAgentDescription();//Registramos al agente en el DF
         dfd.setName(getAID());
         ServiceDescription sd = new ServiceDescription();

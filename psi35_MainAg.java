@@ -208,7 +208,7 @@ public class psi35_MainAg extends Agent {
             update_labels();
             GUI.reset_scoreboard();
             calculate_games();
-            
+
             game = true;
             stop = false;
             pause = false;
@@ -285,7 +285,7 @@ public class psi35_MainAg extends Agent {
                     case 2://Comienza la ronda
                         if (j == 0) {//Mandamos mensajes a cada jugador una sola vez, pero tenemos que procesar las dos respuestas
                             GUI.actualround_label.setText(Integer.toString(rounds));
-                            GUI.jTextArea1.append("Comienza la ronda: " + rounds + "\n");
+                            //GUI.jTextArea1.append("Comienza la ronda: " + rounds + "\n");
                             for (int i = 0; i < 2; i++) {
                                 int id = (int) ((ArrayList) games.get(0)).get(i);
                                 String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
@@ -315,13 +315,13 @@ public class psi35_MainAg extends Agent {
                         }
                         break;
                     case 3://Enviamos resultados a los jugadores
+                        //Obtenemos las payoffs de esta ronda
+                        int payoff1_now = (int) ((ArrayList) ((ArrayList) matrix.get(row)).get(col)).get(0);
+                        int payoff2_now = (int) ((ArrayList) ((ArrayList) matrix.get(row)).get(col)).get(1);
+                        payoff1 = payoff1 + payoff1_now;//Y se las sumamos a las totales del juego
+                        payoff2 = payoff2 + payoff2_now;
                         for (int i = 0; i < 2; i++) {
                             int id = (int) ((ArrayList) games.get(0)).get(i);
-                            //Obtenemos las payoffs de esta ronda
-                            int payoff1_now = (int) ((ArrayList) ((ArrayList) matrix.get(row)).get(col)).get(0);
-                            int payoff2_now = (int) ((ArrayList) ((ArrayList) matrix.get(row)).get(col)).get(1);
-                            payoff1 = payoff1 + payoff1_now;//Y se las sumamos a las totales del juego
-                            payoff2 = payoff2 + payoff2_now;
                             String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
                             String message = "Results#" + row + "," + col + "#"
                                     + payoff1_now + "," + payoff2_now;
@@ -353,12 +353,16 @@ public class psi35_MainAg extends Agent {
 
                         if (payoff1 < payoff2) {//Actualizamos el resultado de la tabla con el ganador
                             GUI.jTextArea1.append("Juego ganado por: " + id1 + " " + ((Vector) GUI.getTable().get(id1)).get(0) + "\n");
+                            GUI.jTextArea1.append("Puntuacion: " + id0 + " "+((Vector) GUI.getTable().get(id0)).get(0)+" " + payoff1 + "\n");
+                            GUI.jTextArea1.append("Puntuacion: " + id1 + " "+((Vector) GUI.getTable().get(id1)).get(0)+" " + payoff2 + "\n");
                             GUI.addResult(id1, 2);
                             GUI.addResult(id0, 3);
                         } else if (payoff1 > payoff2) {
                             GUI.jTextArea1.append("Juego ganado por: " + id0 + " " + ((Vector) GUI.getTable().get(id0)).get(0) + "\n");
                             GUI.addResult(id1, 3);
                             GUI.addResult(id0, 2);
+                        } else {
+                            GUI.jTextArea1.append("Juego empatadado\n");
                         }
 
                         if (games_played < N) {
