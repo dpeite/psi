@@ -125,7 +125,7 @@ public class psi35_MainAg extends Agent {
     }
 
     public void update_matrix(int p) {
-        GUI.jTextArea1.append("Actualizando matriz...\n");
+        GUI.jTextArea1.append("    Actualizando matriz...\n");
         Random rand = new Random();
         int S = ((ArrayList) matrix.get(0)).size();
         double cambios = 0;
@@ -154,7 +154,7 @@ public class psi35_MainAg extends Agent {
                 exit = false;
             }
         } while (exit);
-        GUI.jTextArea1.append("Cambios realizados a la matriz: " + cambios + "\n"
+        GUI.jTextArea1.append("    Cambios realizados a la matriz: " + cambios + "\n"
                 + "De un total de " + (S * S) + " posiciones en la matriz\n");
 
         print_matrix(matrix);
@@ -205,7 +205,7 @@ public class psi35_MainAg extends Agent {
             }
             GUI.jTextArea1.append("******************\n");
             GUI.jTextArea1.append("Comienza el juego\n");
-            matrix = generate_matrix(S);
+            //matrix = generate_matrix(S); //Borrame
             update_labels();
             GUI.reset_scoreboard();
             calculate_games();
@@ -270,10 +270,12 @@ public class psi35_MainAg extends Agent {
                         break;
                     case 1://Comienza el juego
                         rounds = 1;
+                        total_rounds = 0;
                         payoff1 = 0;
                         payoff2 = 0;
                         GUI.actualgame_label.setText(Integer.toString(games_played));
                         GUI.jTextArea1.append("Comienza el juego: " + games_played + "\n");
+                        matrix = generate_matrix(S);
                         GUI.jTextArea1.append("    Participantes: "+id0+" "+((Vector) GUI.getTable().get(id0)).get(0)+" y "
                                 +id1+" "+((Vector) GUI.getTable().get(id1)).get(0)+"\n");
                         for (int i = 0; i < 2; i++) {
@@ -353,7 +355,8 @@ public class psi35_MainAg extends Agent {
                             String message = "EndGame";
                             addBehaviour(new send_message(agent, message, INFORM));
                         }
-
+                        GUI.jTextArea1.append("    Puntuacion: " + id0 + " " + ((Vector) GUI.getTable().get(id0)).get(0) + " " + payoff1 + "\n");
+                        GUI.jTextArea1.append("    Puntuacion: " + id1 + " " + ((Vector) GUI.getTable().get(id1)).get(0) + " " + payoff2 + "\n");
                         if (payoff1 < payoff2) {//Actualizamos el resultado de la tabla con el ganador
                             GUI.jTextArea1.append("    Juego ganado por: " + id1 + " " + ((Vector) GUI.getTable().get(id1)).get(0) + "\n");
                             GUI.addResult(id1, 2);
@@ -365,8 +368,6 @@ public class psi35_MainAg extends Agent {
                         } else {
                             GUI.jTextArea1.append("    Juego empatadado\n");
                         }
-                        GUI.jTextArea1.append("    Puntuacion: " + id0 + " " + ((Vector) GUI.getTable().get(id0)).get(0) + " " + payoff1 + "\n");
-                        GUI.jTextArea1.append("    Puntuacion: " + id1 + " " + ((Vector) GUI.getTable().get(id1)).get(0) + " " + payoff2 + "\n");
                         GUI.jTextArea1.append("\n");
                         if (games_played < N) {
                             step = 1;
