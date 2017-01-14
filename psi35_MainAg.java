@@ -203,6 +203,7 @@ public class psi35_MainAg extends Agent {
             if (game == true) {//Si ya hay un juego en marcha lo paramos, y empezamos de nuevo
                 stop_game();
             }
+            GUI.jTextArea1.append("******************\n");
             GUI.jTextArea1.append("Comienza el juego\n");
             matrix = generate_matrix(S);
             update_labels();
@@ -273,6 +274,8 @@ public class psi35_MainAg extends Agent {
                         payoff2 = 0;
                         GUI.actualgame_label.setText(Integer.toString(games_played));
                         GUI.jTextArea1.append("Comienza el juego: " + games_played + "\n");
+                        GUI.jTextArea1.append("    Participantes: "+id0+" "+((Vector) GUI.getTable().get(id0)).get(0)+" y "
+                                +id1+" "+((Vector) GUI.getTable().get(id1)).get(0)+"\n");
                         for (int i = 0; i < 2; i++) {
                             int id = (int) ((ArrayList) games.get(0)).get(i);
 
@@ -352,19 +355,19 @@ public class psi35_MainAg extends Agent {
                         }
 
                         if (payoff1 < payoff2) {//Actualizamos el resultado de la tabla con el ganador
-                            GUI.jTextArea1.append("Juego ganado por: " + id1 + " " + ((Vector) GUI.getTable().get(id1)).get(0) + "\n");
-                            GUI.jTextArea1.append("Puntuacion: " + id0 + " "+((Vector) GUI.getTable().get(id0)).get(0)+" " + payoff1 + "\n");
-                            GUI.jTextArea1.append("Puntuacion: " + id1 + " "+((Vector) GUI.getTable().get(id1)).get(0)+" " + payoff2 + "\n");
+                            GUI.jTextArea1.append("    Juego ganado por: " + id1 + " " + ((Vector) GUI.getTable().get(id1)).get(0) + "\n");
                             GUI.addResult(id1, 2);
                             GUI.addResult(id0, 3);
                         } else if (payoff1 > payoff2) {
-                            GUI.jTextArea1.append("Juego ganado por: " + id0 + " " + ((Vector) GUI.getTable().get(id0)).get(0) + "\n");
+                            GUI.jTextArea1.append("    Juego ganado por: " + id0 + " " + ((Vector) GUI.getTable().get(id0)).get(0) + "\n");
                             GUI.addResult(id1, 3);
                             GUI.addResult(id0, 2);
                         } else {
-                            GUI.jTextArea1.append("Juego empatadado\n");
+                            GUI.jTextArea1.append("    Juego empatadado\n");
                         }
-
+                        GUI.jTextArea1.append("    Puntuacion: " + id0 + " " + ((Vector) GUI.getTable().get(id0)).get(0) + " " + payoff1 + "\n");
+                        GUI.jTextArea1.append("    Puntuacion: " + id1 + " " + ((Vector) GUI.getTable().get(id1)).get(0) + " " + payoff2 + "\n");
+                        GUI.jTextArea1.append("\n");
                         if (games_played < N) {
                             step = 1;
                             games_played++;
