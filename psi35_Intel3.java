@@ -15,13 +15,16 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
+import static java.lang.Math.abs;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class psi35_Intel1 extends Agent {
+public class psi35_Intel3 extends Agent {
 
     boolean game = false;
     ArrayList<ArrayList> matrix;
@@ -56,15 +59,21 @@ public class psi35_Intel1 extends Agent {
         int step = 0;
         int rounds = 1;
         int game = 1;
+        int payoff = 0;
         boolean playerA = false;
+        int jugador1;
+        int jugador2;
 
         String[] ids;
         String[] payoffs;
+        ArrayList anterior = new ArrayList<>();
+        ArrayList anterior2 = new ArrayList<>();
+        ArrayList jugada = new ArrayList<>();
 
         public void action() {
             ACLMessage msg1 = receive();
             if (msg1 != null) {
-                //System.out.println(msg1);
+                System.out.println(msg1);
                 String[] message = msg1.getContent().split("#");
                 if (message[0].equals("Id")) {
                     id = Integer.parseInt(message[1]);
@@ -94,26 +103,30 @@ public class psi35_Intel1 extends Agent {
             }
             switch (step) {
                 case 0:
+                    jugador1 = 0;
+                    jugador2 = 0;
                     game = 1;
-                    playerA = false;
+                    //playerA = false;
                     best_payoff = 0;
+                    anterior.clear();
+                    anterior2.clear();
+                    jugada.clear();
                     break;
                 case 1://new game
-                    System.out.println("Juego: " + game);
+                    //System.out.println("Juego: " + game);
                     matrix = generate_matrix(S);
                     //print_matrix();
-                    for (int i = 0; i <= 1; i++) {
-                        if (Integer.parseInt(ids[i]) > id) {
-                            playerA = true;
-                        }
+                    if (Integer.parseInt(ids[0]) == id) {
+                        playerA = true;
+                    } else {
+                        playerA = false;
                     }
                     rounds = 1;
                     break;
                 case 2:
                     //Random rand = new Random();
                     //int pos = S - 2;
-                    System.out.println("rounds" + rounds);
-                    int payoff;
+                    //System.out.println("rounds" + rounds);
                     if (playerA == true) {
                         payoff = 0;
                     } else {
@@ -121,15 +134,16 @@ public class psi35_Intel1 extends Agent {
                     }
                     best_fila(payoff);
                     //int pos = (int) ((ArrayList) bestfilas.iterator().next()).get(payoff);
-                    System.out.println(bestfilas);
-                    System.out.println(ordered2);
+                    //System.out.println(bestfilas);
+                    //System.out.println(ordered2);
                     //System.out.println(pos);
                     System.out.println(filcol);
                     System.out.println(filcolcon);
                     //System.out.println(filas);
-                    // System.out.println(columnas);
-
+                    //System.out.println(columnas);
+                    System.out.println("aaaa " + rounds);
                     int pos = select_option();
+                    jugada.add(pos);
                     step = 15;
 
                     if (msg1 != null) {
@@ -141,7 +155,15 @@ public class psi35_Intel1 extends Agent {
                     break;
                 case 3://resultados
                     update_matrix(S, Integer.parseInt(ids[0]), Integer.parseInt(ids[1]), Integer.parseInt(payoffs[0]), Integer.parseInt(payoffs[1]));
-                    print_matrix();
+                    //print_matrix();
+                    //System.out.println("payoff" + payoff);
+                    //System.out.println("Mi eleccion" + Integer.parseInt(ids[payoff]));
+                    //System.out.println("Su eleccion" + Integer.parseInt(ids[abs(payoff - 1)]));
+                    anterior.add(Integer.parseInt(ids[abs(payoff - 1)]));
+                    anterior2.add(Integer.parseInt(ids[abs(payoff - 1)]));
+                    //System.out.println(anterior);
+                    jugador1 += Integer.parseInt(payoffs[0]);
+                    jugador2 += Integer.parseInt(payoffs[1]);
 
                     if (rounds < R) {
                         rounds++;
@@ -152,7 +174,8 @@ public class psi35_Intel1 extends Agent {
                     step = 15;
                     break;
                 case 4://endgame
-
+                    //System.out.println(jugador1);
+                    //System.out.println(jugador2);
                     if (game < N) {
                         step = 85;
                     } else {
@@ -263,20 +286,92 @@ public class psi35_Intel1 extends Agent {
                 }
                 media_contrincante = sum / (double) ass.size();
                 medias_contricante.add(media_contrincante);
-                if(best_media < media_mia-media_contrincante){
-                    best_media = media_mia-media_contrincante;
+                if (best_media < media_mia - media_contrincante) {
+                    best_media = media_mia - media_contrincante;
                     result = i;
                 }
             }
-            System.out.println(medias_mias);
-            System.out.println(medias_contricante);
-            System.out.println(result);
+            //System.out.println(medias_mias);
+            //System.out.println(medias_contricante);
+            //System.out.println(result);
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(psi35_Intel2.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            //System.out.println(anterior);
+            if (anterior.size() == 3) {
+                if ((anterior.get(0) == anterior.get(1)) && (anterior.get(0) == anterior.get(2))) {
+                    //System.out.println("Vaaaaamos");
+                    /*for (int i = 0; i < ordered2.size(); i++) {
+                        if (anterior.get(0).equals(((ArrayList) ordered2.get(i)).get(abs(payoff - 1)))) {
+                            result = (int) ((ArrayList) ordered2.get(i)).get(payoff);
+                        }
+                    }*/
+                    int best_dif = 0;
+                    for (int i = 0; i < filcolcon.size(); i++) {
+                        ArrayList dif1 = (ArrayList) filcol.get(((int) anterior.get(0)));
+                        ArrayList dif2 = (ArrayList) filcolcon.get(((int) anterior.get(0)));
+                        int dif = (int) dif2.get(i) - (int) dif1.get(i);
+                        //System.out.println("*****");
+                        //System.out.println(dif1.get(i));
+                        //System.out.println(dif2.get(i));
+                        //System.out.println(dif);
+                        //System.out.println("-----");
 
+                        if (dif > best_dif) {
+                            ///System.out.println(dif);
+                            result = i;
+                            best_dif = dif;
+                        }
+                    }
+                    anterior.remove(2);
+                    //anterior.remove(1);
+                    //anterior.clear();
+
+                } else {
+                    anterior.clear();
+                }
+            }
+            if (jugada.size() > 1) {
+                System.out.println(rounds);
+                System.out.println(jugada.size() - 2);
+                System.out.println("priemra " + (rounds - 3));
+                System.out.println(anterior2.size() - 1);
+                System.out.println("segunda " + (rounds - 2));
+                System.out.println(jugada);
+                System.out.println(anterior2);
+                //jugada.get(rounds-);
+                if (jugada.get(rounds - 3).equals(anterior2.get(rounds - 2))) {
+                    int best_dif = 0;
+                    System.out.println("Su siguiente jugada es va a ser un: " + jugada.get(rounds - 3));
+                    for (int i = 0; i < filcolcon.size(); i++) {
+                        ArrayList dif1 = (ArrayList) filcol.get(((int) jugada.get(rounds - 3)));
+                        ArrayList dif2 = (ArrayList) filcolcon.get(((int) jugada.get(rounds - 3)));
+                        int dif = (int) dif2.get(i) - (int) dif1.get(i);
+                        System.out.println("*****");
+                        System.out.println(dif1.get(i));
+                        System.out.println(dif2.get(i));
+                        System.out.println(dif);
+                        System.out.println("-----");
+
+                        if (dif > best_dif) {
+                            ///System.out.println(dif);
+                            System.out.println(result);
+                            result = i;
+                            best_dif = dif;
+                        }
+                    }
+                }
+            }
             Random rand = new Random();
             int rnd = rand.nextInt(((20 - 1) - 0) + 1) + 0;
-            if (rnd < 2) {
+            if (rnd < 2  || rounds ==    1) {
                 result = rand.nextInt(((S - 1) - 0) + 1) + 0;
+                //System.out.println(result);
+
             }
+            System.out.println(result);
             return result;
         }
 
