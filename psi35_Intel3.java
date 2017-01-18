@@ -108,11 +108,11 @@ public class psi35_Intel3 extends Agent {
                     game = 1;
                     //playerA = false;
                     best_payoff = 0;
+                    break;
+                case 1://new game
                     anterior.clear();
                     anterior2.clear();
                     jugada.clear();
-                    break;
-                case 1://new game
                     //System.out.println("Juego: " + game);
                     matrix = generate_matrix(S);
                     //print_matrix();
@@ -366,7 +366,7 @@ public class psi35_Intel3 extends Agent {
             }
             Random rand = new Random();
             int rnd = rand.nextInt(((20 - 1) - 0) + 1) + 0;
-            if (rnd < 2  || rounds ==    1) {
+            if (rnd < 2 || rounds == 1) {
                 result = rand.nextInt(((S - 1) - 0) + 1) + 0;
                 //System.out.println(result);
 
