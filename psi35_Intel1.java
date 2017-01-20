@@ -1,13 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
-/**
- *
- * @author peite
- */
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.domain.DFService;
@@ -16,14 +7,16 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import static java.lang.Math.abs;
+import static java.lang.Math.abs;
+import static java.lang.Math.abs;
+import static java.lang.Math.abs;
 
 public class psi35_Intel1 extends Agent {
 
-    boolean game = false;
     ArrayList<ArrayList> matrix;
 
     int N = 0;
@@ -46,27 +39,26 @@ public class psi35_Intel1 extends Agent {
         } catch (FIPAException fe) {
             fe.printStackTrace();
         }
-
         addBehaviour(new main_loop());
-
     }
 
     public class main_loop extends Behaviour {
 
-        int step = 0;
         int rounds = 1;
-        int game = 1;
-        boolean playerA = false;
+        int playerA = 0;
 
         String[] ids;
         String[] payoffs;
+        ArrayList anterior = new ArrayList<>();
+        ArrayList anteriorBIS = new ArrayList<>();
+        ArrayList mi_jugada = new ArrayList<>();
 
         public void action() {
             ACLMessage msg1 = receive();
             if (msg1 != null) {
                 //System.out.println(msg1);
                 String[] message = msg1.getContent().split("#");
-                if (message[0].equals("Id")) {
+                if (message[0].equals("Id")) {//Al iniciar una nueva partida guardamos los datos
                     id = Integer.parseInt(message[1]);
                     String[] params = message[2].split(",");
                     N = Integer.parseInt(params[0]);
@@ -74,63 +66,22 @@ public class psi35_Intel1 extends Agent {
                     R = Integer.parseInt(params[2]);
                     I = Integer.parseInt(params[3]);
                     P = Integer.parseInt(params[4]);
-                    step = 0;
-                } else if (message[0].equals("NewGame")) {
+                } else if (message[0].equals("NewGame")) {//Al comienzo de un nuevo juego limpiamos todas las variables
                     ids = message[1].split(",");
-                    step = 1;
-                } else if (message[0].equals("Position")) {
-                    step = 2;
-                } else if (message[0].equals("Results")) {
-                    ids = message[1].split(",");
-                    payoffs = message[2].split(",");
-                    step = 3;
-                } else if (message[0].equals("EndGame")) {
-                    step = 4;
-                } else if (message[0].equals("Changed")) {
-                    step = 5;
-                }
-            } else {
-                block();
-            }
-            switch (step) {
-                case 0:
-                    game = 1;
-                    playerA = false;
-                    best_payoff = 0;
-                    break;
-                case 1://new game
-                    System.out.println("Juego: " + game);
-                    matrix = generate_matrix(S);
-                    //print_matrix();
-                    for (int i = 0; i <= 1; i++) {
-                        if (Integer.parseInt(ids[i]) > id) {
-                            playerA = true;
-                        }
+                    anterior.clear();
+                    anteriorBIS.clear();
+                    mi_jugada.clear();
+                    matrix = generate_matrix(S);//Generamos una matriz de 0
+                    if (Integer.parseInt(ids[0]) == id) {//Comprobamos si tenemos que escoger filas o columnas segun el id
+                        playerA = 0;
+                    } else {
+                        playerA = 1;
                     }
                     rounds = 1;
-                    break;
-                case 2:
-                    //Random rand = new Random();
-                    //int pos = S - 2;
-                    System.out.println("rounds" + rounds);
-                    int payoff;
-                    if (playerA == true) {
-                        payoff = 0;
-                    } else {
-                        payoff = 1;
-                    }
-                    best_fila(payoff);
-                    //int pos = (int) ((ArrayList) bestfilas.iterator().next()).get(payoff);
-                    System.out.println(bestfilas);
-                    System.out.println(ordered2);
-                    //System.out.println(pos);
-                    System.out.println(filcol);
-                    System.out.println(filcolcon);
-                    //System.out.println(filas);
-                    // System.out.println(columnas);
-
-                    int pos = select_option();
-                    step = 15;
+                } else if (message[0].equals("Position")) {
+                    read_matrix(playerA);//Obtenemos informacion de la matriz que utilizaremos en la estrategia
+                    int pos = select_option();//Con los datos obtenidos antes, escogemos la mejor posicion
+                    mi_jugada.add(pos);//Añadimos nuestra jugada a un array, para llevar el control de nuestras jugadas y las del contricante
 
                     if (msg1 != null) {
                         ACLMessage reply = msg1.createReply();
@@ -138,30 +89,24 @@ public class psi35_Intel1 extends Agent {
                         reply.setContent("Position#" + pos);
                         send(reply);
                     }
-                    break;
-                case 3://resultados
+                } else if (message[0].equals("Results")) {
+                    ids = message[1].split(",");
+                    payoffs = message[2].split(",");
+                    //Actualizamos la matriz con las payoffs obtenidas del resultado
                     update_matrix(S, Integer.parseInt(ids[0]), Integer.parseInt(ids[1]), Integer.parseInt(payoffs[0]), Integer.parseInt(payoffs[1]));
-                    print_matrix();
+                    //Añadimos la jugada del contricante a dos arrays diferentes, que utilizaremos para detectar
+                    //si siempre escoge la misma jugada, o si escoge mi jugada anterior
+                    anterior.add(Integer.parseInt(ids[abs(playerA - 1)]));
+                    anteriorBIS.add(Integer.parseInt(ids[abs(playerA - 1)]));
 
                     if (rounds < R) {
                         rounds++;
-                        //step = 2;
-                    } else {
-                        //step++;
                     }
-                    step = 15;
-                    break;
-                case 4://endgame
-
-                    if (game < N) {
-                        step = 85;
-                    } else {
-                        step = 0;
-                    }
-
-                    break;
-                case 5://changed
-                    break;
+                } else if (message[0].equals("EndGame")) {
+                } else if (message[0].equals("Changed")) {
+                }
+            } else {
+                block();
             }
         }
 
@@ -169,66 +114,56 @@ public class psi35_Intel1 extends Agent {
             return false;
         }
 
-        int best_payoff = 0;
-        ArrayList ordered2;
-        HashSet bestfilas = new HashSet();
-        //ArrayList filas = new ArrayList();
-        // ArrayList columnas = new ArrayList();
+        //int best_payoff = 0;
+        //ArrayList ordered2;
+        //HashSet bestfilas = new HashSet();
         ArrayList filcol = new ArrayList();
         ArrayList filcolcon = new ArrayList();
 
-        public void best_fila(int payoff) {
-            HashSet ordered = new HashSet();
-            best_payoff = 0;
-            //int payoff;
-            //filas.clear();
-            //columnas.clear();
+        public void read_matrix(int payoff) {
+            /*
+            Esta funcion recorre la matriz que vamos aprendido en cada jugada y va obteniendo y guardando los datos necesarios para la estrategia a seguir
+            A medida que va recorriendo la matriz añade a dos arraylist las payoffs de los jugadores, en la variable filcol añade las payoffs
+            de la fila/columna que me correspondan. Mientras que en la variable filcolcon hace lo mismo pero con las payoffs del contricante
+            
+            Nota: La parte comentada, son otras dos variables que me dan, la posicion en la que gano mas payoff y la matriz ordenada de mayor payoff a menor
+            No son relevantes para mi estrategia, pero si podrian ser utiles en otra
+             */
+            //HashSet ordered = new HashSet();
+            //best_payoff = 0;
             filcol.clear();
             filcolcon.clear();
-            /*if (playerA == true) {
-                payoff = 0;
-            } else {
-                payoff = 1;
-            }*/
             for (int i = 0; i < S; i++) {
-                //ArrayList fila = new ArrayList();
-                //ArrayList columna = new ArrayList();
-                ArrayList filcol2 = new ArrayList();
-                ArrayList filcolcon2 = new ArrayList();
+                ArrayList filcolN = new ArrayList();
+                ArrayList filcolconN = new ArrayList();
                 for (int j = 0; j < S; j++) {
                     ArrayList a = (ArrayList) matrix.get(i).get(j);
                     ArrayList b = (ArrayList) matrix.get(j).get(i);
-                    //fila.add(a.get(payoff));
-                    // columna.add(b.get(payoff));
                     if (payoff == 0) {
-                        filcol2.add(a.get(payoff));
-                        filcolcon2.add(b.get(payoff));
+                        filcolN.add(a.get(payoff));
+                        filcolconN.add(b.get(payoff));
                     } else {
-                        filcol2.add(b.get(payoff));
-                        filcolcon2.add(a.get(payoff));
+                        filcolN.add(b.get(payoff));
+                        filcolconN.add(a.get(payoff));
                     }
 
-                    ArrayList<Integer> best = new ArrayList<>();
+                    /*ArrayList<Integer> best = new ArrayList<>();
                     best.add(i);
                     best.add(j);
                     best.add((Integer) a.get(payoff));
                     if (((Integer) a.get(payoff)) >= best_payoff) {
-                        //System.out.println(("Actual payoff: "+(Integer) a.get(payoff)));
-                        //System.out.println("Best Payoff: "+best_payoff);
                         if (((Integer) a.get(payoff)) > best_payoff) {
                             bestfilas.clear();
                             best_payoff = (Integer) a.get(payoff);
                         }
                         bestfilas.add(best);
                     }
-                    ordered.add(best);
+                    ordered.add(best);*/
                 }
-                //filas.add(fila);
-                //columnas.add(columna);
-                filcol.add(filcol2);
-                filcolcon.add(filcolcon2);
+                filcol.add(filcolN);
+                filcolcon.add(filcolconN);
             }
-            ordered2 = new ArrayList(ordered);
+            /*ordered2 = new ArrayList(ordered);
             Collections.sort(ordered2, new Comparator<ArrayList<Integer>>() {
                 @Override
                 public int compare(ArrayList<Integer> o1, ArrayList<Integer> o2) {
@@ -236,12 +171,27 @@ public class psi35_Intel1 extends Agent {
                 }
 
             });
-            ordered.clear();
+            ordered.clear();*/
         }
 
         public int select_option() {
-            ArrayList medias_mias = new ArrayList<>();
-            ArrayList medias_contricante = new ArrayList<>();
+            /*
+        Selecciona la mejor opcion que el agente debe de escoger en funcion de la matriz que conoce hasta ese momento
+        Tiene 3 estrategias:
+        1 - Calcula la media de la columna/fila que deba escoger el agente
+            Calcula la media de la columna/fila del contricante
+            Resta las medias para asi obtener que fila/columna es en la que el mas gana, mientras su contricante menos gana
+        
+        2 - Si en las 3 jugadas anteriores el contricante escogio siempre la misma jugada, el agente supone que la proxima jugada sera igual a las anteriores
+            Sabiendo eso el agente calcula cual es la mejor posicion que puede escoger sabiendo cual va a ser la proxima eleccion del contricante.
+            Para saber cual es la posicion mas ventajosa es parecido a la estrategia anterior, restamos ambos valores
+            y el que tenga la mayor diferencia sera la mejor posicion posible a escoger sabiendo la proxima eleccion.
+        
+        3- Si el contricante basa su estrategia o parte de ella en escoger mi ultima jugada como su jugada, puedo suponer cual sera su siguiente jugada
+           Sabiendo esto aplico la misma estrategia que en 2.
+        
+        Tambien existe un random, el cual añade aleatoriedad a mis jugadas y ayuda a la hora de ir descubriendo nuevas posiciones de la matriz
+             */
 
             int result = 0;
             double media_mia = 0;
@@ -250,92 +200,75 @@ public class psi35_Intel1 extends Agent {
 
             for (int i = 0; i < filcol.size(); i++) {
                 int sum = 0;
-                ArrayList<Integer> a = (ArrayList) filcol.get(i);
-                for (Integer as : a) {
-                    sum += as;
+                ArrayList<Integer> arrayTMP = (ArrayList) filcol.get(i);
+                for (Integer payoff : arrayTMP) {
+                    sum += payoff;
                 }
-                media_mia = sum / (double) a.size();
-                medias_mias.add(media_mia);
+                media_mia = sum / (double) arrayTMP.size();
                 sum = 0;
-                ArrayList<Integer> ass = (ArrayList) filcolcon.get(i);
-                for (Integer as : ass) {
-                    sum += as;
+                ArrayList<Integer> arrayTMP2 = (ArrayList) filcolcon.get(i);
+                for (Integer payoff : arrayTMP2) {
+                    sum += payoff;
                 }
-                media_contrincante = sum / (double) ass.size();
-                medias_contricante.add(media_contrincante);
-                if(best_media < media_mia-media_contrincante){
-                    best_media = media_mia-media_contrincante;
+                media_contrincante = sum / (double) arrayTMP2.size();
+                if (best_media < media_mia - media_contrincante) {
+                    best_media = media_mia - media_contrincante;
                     result = i;
                 }
             }
-            System.out.println(medias_mias);
-            System.out.println(medias_contricante);
-            System.out.println(result);
+
+            if (anterior.size() == 3) {
+                if ((anterior.get(0) == anterior.get(1)) && (anterior.get(1) == anterior.get(2))) {
+                    int best_dif = 0;
+                    for (int i = 0; i < filcolcon.size(); i++) {
+                        ArrayList dif1 = (ArrayList) filcol.get(((int) anterior.get(0)));
+                        ArrayList dif2 = (ArrayList) filcolcon.get(((int) anterior.get(0)));
+                        int dif = (int) dif2.get(i) - (int) dif1.get(i);
+                        if (dif > best_dif) {
+                            result = i;
+                            best_dif = dif;
+                        }
+                    }
+                    anterior.remove(0); 
+                } else {
+                    anterior.clear();
+                }
+            }
+            if (mi_jugada.size() > 2) {
+                if ((mi_jugada.get(rounds - 3).equals(anteriorBIS.get(rounds - 2))) && (mi_jugada.get(rounds - 4).equals(anteriorBIS.get(rounds - 3)))) {
+                    int best_dif = 0;
+                    for (int i = 0; i < filcolcon.size(); i++) {
+                        ArrayList dif1 = (ArrayList) filcol.get(((int) mi_jugada.get(rounds - 3)));
+                        ArrayList dif2 = (ArrayList) filcolcon.get(((int) mi_jugada.get(rounds - 3)));
+                        int dif = (int) dif2.get(i) - (int) dif1.get(i);
+                        if (dif > best_dif) {
+                            result = i;
+                            best_dif = dif;
+                        }
+                    }
+                }
+            }
+            //No es necesario un sleep, pero parece que ayuda a obtener mejores resultados¿?
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(psi35_Intel1.class.getName()).log(Level.SEVERE, null, ex);
+            }
 
             Random rand = new Random();
             int rnd = rand.nextInt(((20 - 1) - 0) + 1) + 0;
-            if (rnd < 2) {
+            if (rnd < 2 || rounds == 1) {
                 result = rand.nextInt(((S - 1) - 0) + 1) + 0;
             }
             return result;
         }
 
-        /*public int select_option() {
-            int result = 0;
-            double media = 0;
-            for (int i = 0; i < filcol.size(); i++) {
-                int sum = 0;
-                ArrayList<Integer> a = (ArrayList) filcol.get(i);
-                for (Integer as : a) {
-                    sum += as;
-                }
-                if (media < sum / (double) a.size()) {
-                    media = sum / (double) a.size();
-                    result = i;
-                }
-                System.out.println(media);
-                System.out.println(result);
-            }
-            Random rand = new Random();
-            int rnd = rand.nextInt(((20 - 1) - 0) + 1) + 0;
-            if (rnd < 2) {
-                result = rand.nextInt(((S - 1) - 0) + 1) + 0;
-            }
-            return result;
-        }*/
-
- /*public ArrayList get_filas(int payoff) {
-            System.out.println("get_filas");
-            ArrayList filas = new ArrayList();
-            for (int i = 0; i < S; i++) {
-                ArrayList fila = new ArrayList();
-                for (int j = 0; j < S; j++) {
-                    ArrayList a = (ArrayList) matrix.get(i).get(j);
-                    fila.add(a.get(payoff));
-                }
-                filas.add(fila);
-            }
-            return filas;
-        }
-
-        public ArrayList get_columnas(int payoff) {
-            System.out.println("get_columnas");
-            ArrayList columnas = new ArrayList();
-            for (int i = 0; i < S; i++) {
-                ArrayList columna = new ArrayList();
-                for (int j = 0; j < S; j++) {
-                    ArrayList a = (ArrayList) matrix.get(j).get(i);
-                    columna.add(a.get(payoff));
-                }
-                columnas.add(columna);
-            }
-            return columnas;
-        }*/
+        //Actualizamos la matriz con los resultados obtenidos
         public ArrayList update_matrix(int S, int nfila, int ncolumna, int payoff1, int payoff2) {
             ArrayList asd = (ArrayList) matrix.get(nfila).get(ncolumna);
             asd.set(0, payoff1);
             asd.set(1, payoff2);
-
+            //Tambien actualizamos la posicion simetrica
             ArrayList asd1 = (ArrayList) matrix.get(ncolumna).get(nfila);
             asd1.set(0, payoff2);
             asd1.set(1, payoff1);
@@ -343,13 +276,7 @@ public class psi35_Intel1 extends Agent {
             return matrix;
         }
 
-        public void print_matrix() {
-            System.out.println("////////////");
-            for (int i = 0; i < matrix.size(); i++) {
-                System.out.println(matrix.get(i));
-            }
-        }
-
+        //Generamos una matriz de ceros que luego iremos llenando a medida que conozcamos los resultados
         public ArrayList generate_matrix(int S) {
             ArrayList matrix = new ArrayList<>();
             for (int i = 0; i < S; i++) {//Generamos fila a fila la matriz

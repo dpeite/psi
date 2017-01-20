@@ -482,12 +482,11 @@ public class psi35_GUI extends javax.swing.JFrame {
 
     private void reset_menuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reset_menuActionPerformed
         // TODO add your handling code here:
-        System.out.println("Not implemented yet");
+        reset_scoreboard();
     }//GEN-LAST:event_reset_menuActionPerformed
 
     private void verbose_menuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verbose_menuActionPerformed
         // TODO add your handling code here:
-        System.out.println("Not implemented yet");
         if (debug == true){
             debug = false;
         }
@@ -514,15 +513,12 @@ public class psi35_GUI extends javax.swing.JFrame {
     }
 
     public void setTable(String name) {
-        //System.out.println("dentro set table");
         Object[] row = {name, "", 0, 0, 0};
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         Vector tabla = model.getDataVector();
-        //System.out.println(model.getRowCount());
         boolean add = true;
         if (model.getRowCount() != 0) {
             for (int i = 0; i < model.getRowCount(); i++) {
-                //System.out.println(((Vector) tabla.elementAt(i)).elementAt(0));
                 if (((Vector) tabla.elementAt(i)).elementAt(0).equals(name)) {
                     add = false;
                 }
@@ -535,7 +531,6 @@ public class psi35_GUI extends javax.swing.JFrame {
             jTextArea1.append("Añadido un nuevo jugador: " + row[0] + "\n");
 
         }
-        //System.out.println(model.getDataVector());
     }
 
     public void addResult(int id, int result) {

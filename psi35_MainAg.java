@@ -288,42 +288,51 @@ public class psi35_MainAg extends Agent {
                         step++;
                         break;
                     case 2://Comienza la ronda
-                        if (j == 0) {//Mandamos mensajes a cada jugador una sola vez, pero tenemos que procesar las dos respuestas
-                            GUI.actualround_label.setText(Integer.toString(rounds));
-                            //GUI.jTextArea1.append("Comienza la ronda: " + rounds + "\n");
-                            for (int i = 0; i < 2; i++) {
-                                int id = (int) ((ArrayList) games.get(0)).get(i);
+                        GUI.actualround_label.setText(Integer.toString(rounds));
+                        if (j <= 1) {
+                            if (j == 0) {
+                                int id = (int) ((ArrayList) games.get(0)).get(0);
                                 String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
                                 String message = "Position";
                                 addBehaviour(new send_message(agent, message, REQUEST));
-                            }
-                            j++;
-
-                        }
-                        msg1 = receive();
-                        if (msg1 != null) {
-                            //System.out.println(msg1);
-                            String msg = msg1.getContent();
-                            if (j == 1) {//Procesamos el primer mensaje que contiene la fila, ya que
-                                //primero le mandamos el mensaje al jugador con el id mas bajo
                                 j++;
-                                row = Integer.parseInt(msg.split("#")[1]);
-
                             } else {
-                                col = Integer.parseInt(msg.split("#")[1]);
-
-                                j = 0;
-                                step++;
+                                msg1 = receive();
+                                if (msg1 != null) {
+                                    String msg = msg1.getContent();
+                                    row = Integer.parseInt(msg.split("#")[1]);
+                                    j++;
+                                } else {
+                                    block();
+                                }
                             }
-                            if (GUI.debug == true) {
-                                GUI.jTextArea1.append("    Fila: " + row + " Columna: " + col + "\n");
+                        }
+                        if (j <= 3) {
+                            if (j == 2) {
+                                int id = (int) ((ArrayList) games.get(0)).get(1);
+                                String agent = (String) ((Vector) GUI.getTable().get(id)).get(0);
+                                String message = "Position";
+                                addBehaviour(new send_message(agent, message, REQUEST));
+                                j++;
+                            } else {
+                                msg1 = receive();
+                                if (msg1 != null) {
+                                    String msg = msg1.getContent();
+                                    col = Integer.parseInt(msg.split("#")[1]);
+                                    j = 0;
+                                    step++;
+                                } else {
+                                    block();
+                                }
                             }
-                        } else {
-                            block();
                         }
                         break;
+
                     case 3://Enviamos resultados a los jugadores
                         //Obtenemos las payoffs de esta ronda
+                        if (GUI.debug == true) {
+                            GUI.jTextArea1.append("    Fila: " + row + " Columna: " + col + "\n");
+                        }
                         int payoff1_now = (int) ((ArrayList) ((ArrayList) matrix.get(row)).get(col)).get(0);
                         int payoff2_now = (int) ((ArrayList) ((ArrayList) matrix.get(row)).get(col)).get(1);
                         payoff1 = payoff1 + payoff1_now;//Y se las sumamos a las totales del juego
