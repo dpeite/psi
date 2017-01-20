@@ -12,9 +12,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.lang.Math.abs;
 
-public class psi35_Intel3 extends Agent {
+public class psi35_Intel4 extends Agent {
 
-    boolean game = false;
     ArrayList<ArrayList> matrix;
 
     int N = 0;
@@ -42,11 +41,8 @@ public class psi35_Intel3 extends Agent {
 
     public class main_loop extends Behaviour {
 
-        int step = 0;
         int rounds = 1;
-        //int game = 1;
-        int payoff = 0;
-        boolean playerA = false;
+        int playerA = 0;
 
         String[] ids;
         String[] payoffs;
@@ -59,7 +55,7 @@ public class psi35_Intel3 extends Agent {
             if (msg1 != null) {
                 //System.out.println(msg1);
                 String[] message = msg1.getContent().split("#");
-                if (message[0].equals("Id")) {
+                if (message[0].equals("Id")) {//Al iniciar una nueva partida guardamos los datos
                     id = Integer.parseInt(message[1]);
                     String[] params = message[2].split(",");
                     N = Integer.parseInt(params[0]);
@@ -67,50 +63,22 @@ public class psi35_Intel3 extends Agent {
                     R = Integer.parseInt(params[2]);
                     I = Integer.parseInt(params[3]);
                     P = Integer.parseInt(params[4]);
-                    step = 0;
-                } else if (message[0].equals("NewGame")) {
+                } else if (message[0].equals("NewGame")) {//Al comienzo de un nuevo juego limpiamos todas las variables
                     ids = message[1].split(",");
-                    step = 1;
-                } else if (message[0].equals("Position")) {
-                    step = 2;
-                } else if (message[0].equals("Results")) {
-                    ids = message[1].split(",");
-                    payoffs = message[2].split(",");
-                    step = 3;
-                } else if (message[0].equals("EndGame")) {
-                    step = 4;
-                } else if (message[0].equals("Changed")) {
-                    step = 5;
-                }
-            } else {
-                block();
-            }
-            switch (step) {
-                case 0:
-                    //game = 1;
-                    break;
-                case 1://new game
                     anterior.clear();
                     anteriorBIS.clear();
                     mi_jugada.clear();
-                    matrix = generate_matrix(S);
-                    if (Integer.parseInt(ids[0]) == id) {
-                        playerA = true;
+                    matrix = generate_matrix(S);//Generamos una matriz de 0
+                    if (Integer.parseInt(ids[0]) == id) {//Comprobamos si tenemos que escoger filas o columnas segun el id
+                        playerA = 0;
                     } else {
-                        playerA = false;
+                        playerA = 1;
                     }
                     rounds = 1;
-                    break;
-                case 2:
-                    if (playerA == true) {
-                        payoff = 0;
-                    } else {
-                        payoff = 1;
-                    }
-                    read_matrix(payoff);
-                    int pos = select_option();
-                    mi_jugada.add(pos);
-                    step = 15;
+                } else if (message[0].equals("Position")) {
+                    read_matrix(playerA);//Obtenemos informacion de la matriz que utilizaremos en la estrategia
+                    int pos = select_option();//Con los datos obtenidos antes, escogemos la mejor posicion
+                    mi_jugada.add(pos);//Añadimos nuestra jugada a un array, para llevar el control de nuestras jugadas y las del contricante
 
                     if (msg1 != null) {
                         ACLMessage reply = msg1.createReply();
@@ -118,33 +86,24 @@ public class psi35_Intel3 extends Agent {
                         reply.setContent("Position#" + pos);
                         send(reply);
                     }
-                    break;
-                case 3://Resultados
-                    /*
-                    
-                     */
+                } else if (message[0].equals("Results")) {
+                    ids = message[1].split(",");
+                    payoffs = message[2].split(",");
+                    //Actualizamos la matriz con las payoffs obtenidas del resultado
                     update_matrix(S, Integer.parseInt(ids[0]), Integer.parseInt(ids[1]), Integer.parseInt(payoffs[0]), Integer.parseInt(payoffs[1]));
-                    anterior.add(Integer.parseInt(ids[abs(payoff - 1)]));
-                    anteriorBIS.add(Integer.parseInt(ids[abs(payoff - 1)]));
+                    //Añadimos la jugada del contricante a dos arrays diferentes, que utilizaremos para detectar
+                    //si siempre escoge la misma jugada, o si escoge mi jugada anterior
+                    anterior.add(Integer.parseInt(ids[abs(playerA - 1)]));
+                    anteriorBIS.add(Integer.parseInt(ids[abs(playerA - 1)]));
 
                     if (rounds < R) {
                         rounds++;
-                        //step = 2;
-                    } else {
-                        //step++;
+                    } else if (message[0].equals("EndGame")) {
+                    } else if (message[0].equals("Changed")) {
                     }
-                    step = 15;
-                    break;
-                case 4://endgame
-                    /*if (game < N) {
-                        step = 85;
-                    } else {
-                        step = 0;
-                    }*/
-
-                    break;
-                case 5://changed
-                    break;
+                } else {
+                    block();
+                }
             }
         }
 
@@ -230,8 +189,6 @@ public class psi35_Intel3 extends Agent {
         
         Tambien existe un random, el cual añade aleatoriedad a mis jugadas y ayuda a la hora de ir descubriendo nuevas posiciones de la matriz
              */
-            ArrayList medias_mias = new ArrayList<>();
-            ArrayList medias_contricante = new ArrayList<>();
 
             int result = 0;
             double media_mia = 0;
@@ -240,29 +197,23 @@ public class psi35_Intel3 extends Agent {
 
             for (int i = 0; i < filcol.size(); i++) {
                 int sum = 0;
-                ArrayList<Integer> a = (ArrayList) filcol.get(i);
-                for (Integer as : a) {
-                    sum += as;
+                ArrayList<Integer> arrayTMP = (ArrayList) filcol.get(i);
+                for (Integer payoff : arrayTMP) {
+                    sum += payoff;
                 }
-                media_mia = sum / (double) a.size();
-                medias_mias.add(media_mia);
+                media_mia = sum / (double) arrayTMP.size();
                 sum = 0;
-                ArrayList<Integer> ass = (ArrayList) filcolcon.get(i);
-                for (Integer as : ass) {
-                    sum += as;
+                ArrayList<Integer> arrayTMP2 = (ArrayList) filcolcon.get(i);
+                for (Integer payoff : arrayTMP2) {
+                    sum += payoff;
                 }
-                media_contrincante = sum / (double) ass.size();
-                medias_contricante.add(media_contrincante);
+                media_contrincante = sum / (double) arrayTMP2.size();
                 if (best_media < media_mia - media_contrincante) {
                     best_media = media_mia - media_contrincante;
                     result = i;
                 }
             }
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(psi35_Intel2.class.getName()).log(Level.SEVERE, null, ex);
-            }
+
             if (anterior.size() == 3) {
                 if ((anterior.get(0) == anterior.get(1)) && (anterior.get(0) == anterior.get(2))) {
                     int best_dif = 0;
@@ -281,8 +232,8 @@ public class psi35_Intel3 extends Agent {
                     anterior.clear();
                 }
             }
-            if (mi_jugada.size() > 1) {
-                if (mi_jugada.get(rounds - 3).equals(anteriorBIS.get(rounds - 2))) {
+            if (mi_jugada.size() > 2) {
+                if ((mi_jugada.get(rounds - 3).equals(anteriorBIS.get(rounds - 2))) && (mi_jugada.get(rounds - 4).equals(anteriorBIS.get(rounds - 3)))) {
                     int best_dif = 0;
                     for (int i = 0; i < filcolcon.size(); i++) {
                         ArrayList dif1 = (ArrayList) filcol.get(((int) mi_jugada.get(rounds - 3)));
@@ -295,6 +246,13 @@ public class psi35_Intel3 extends Agent {
                     }
                 }
             }
+            //No es necesario un sleep, pero parece que ayuda a obtener mejores resultados¿?
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(psi35_Intel2.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
             Random rand = new Random();
             int rnd = rand.nextInt(((20 - 1) - 0) + 1) + 0;
             if (rnd < 2 || rounds == 1) {
