@@ -276,8 +276,8 @@ public class psi35_MainAg extends Agent {
                         GUI.actualgame_label.setText(Integer.toString(games_played));
                         GUI.jTextArea1.append("Comienza el juego: " + games_played + "\n");
                         matrix = generate_matrix(S);
-                        GUI.jTextArea1.append("    Participantes: "+id0+" "+((Vector) GUI.getTable().get(id0)).get(0)+" y "
-                                +id1+" "+((Vector) GUI.getTable().get(id1)).get(0)+"\n");
+                        GUI.jTextArea1.append("    Participantes: " + id0 + " " + ((Vector) GUI.getTable().get(id0)).get(0) + " y "
+                                + id1 + " " + ((Vector) GUI.getTable().get(id1)).get(0) + "\n");
                         for (int i = 0; i < 2; i++) {
                             int id = (int) ((ArrayList) games.get(0)).get(i);
 
@@ -314,6 +314,9 @@ public class psi35_MainAg extends Agent {
 
                                 j = 0;
                                 step++;
+                            }
+                            if (GUI.debug == true) {
+                                GUI.jTextArea1.append("    Fila: " + row + " Columna: " + col + "\n");
                             }
                         } else {
                             block();

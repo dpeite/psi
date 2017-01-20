@@ -390,7 +390,6 @@ public class psi35_GUI extends javax.swing.JFrame {
 
         jMenu3.setText("Window");
 
-        verbose_menu.setSelected(true);
         verbose_menu.setText("Verbose");
         verbose_menu.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -489,9 +488,16 @@ public class psi35_GUI extends javax.swing.JFrame {
     private void verbose_menuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verbose_menuActionPerformed
         // TODO add your handling code here:
         System.out.println("Not implemented yet");
+        if (debug == true){
+            debug = false;
+        }
+        else{
+            debug = true;
+        }
     }//GEN-LAST:event_verbose_menuActionPerformed
 
     static psi35_MainAg main_agent;
+    static boolean debug = false;
 
     public void init(psi35_MainAg a, int R, int S, int I, int P) {
         this.main_agent = a;

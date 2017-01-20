@@ -1,0 +1,5 @@
+Todos: 2 intel, 1 random y 1 fixed
+-agents Hue:psi35_MainAg;Fixed:psi35_Fixed;Random:psi35_Random;Intel1:psi35_Intel1;Intel1bis:psi35_Intel1
+
+2 intel, 1 random
+-agents Hue:psi35_MainAg;Random:psi35_Random;Intel1:psi35_Intel1;Intel1bis:psi35_Intel1
