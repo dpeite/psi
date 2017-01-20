@@ -250,7 +250,7 @@ public class psi35_Intel4 extends Agent {
             try {
                 Thread.sleep(1);
             } catch (InterruptedException ex) {
-                Logger.getLogger(psi35_Intel2.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(psi35_Intel4.class.getName()).log(Level.SEVERE, null, ex);
             }
             
             Random rand = new Random();
